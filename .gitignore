@@ -1,0 +1,82 @@
+# =========================
+# OS / System
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+*.env
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# Python (search-api + vector-embedder + scripts)
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+models/
+!models/.gitkeep
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.python-version
+
+# =========================
+# Node / React (frontend)
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+build/
+dist/
+.next/
+out/
+
+# =========================
+# Data folder (IMPORTANT)
+# =========================
+data/*
+!data/.gitkeep
+
+# =========================
+# Docker
+# =========================
+*.pid
+*.seed
+*.sock
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Misc
+# =========================
+coverage/
+.cache/
