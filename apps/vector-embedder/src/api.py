@@ -8,6 +8,7 @@ Exposes:
 
 from fastapi import FastAPI
 from .pipeline import embed_items
+from typing import List
 
 app = FastAPI()
 

@@ -2,6 +2,8 @@
 
 Lightweight text embedding service built with SentenceTransformers.
 
+Designed as a component in a hybrid search system, this service enables semantic vector generation for downstream retrieval and ranking.
+
 This project takes structured input data, extracts text fields, generates vector embeddings, and returns the results in the original structure. It supports both command-line usage and an HTTP API through FastAPI.
 
 ## Features
@@ -24,6 +26,8 @@ src/
 └── api.py               # FastAPI HTTP interface
 
 ## Architecture
+
+Client → nginx (80/443) → uvicorn (127.0.0.1:8000) → FastAPI → pipeline → model
 
 Adapters:
 - cli.py → command-line / stdin-stdout interface
@@ -126,6 +130,30 @@ This service is useful when you need to generate embeddings for structured recor
 - internal content records
 
 It allows structured application data to be transformed into embedding-ready vectors without losing field relationships.
+
+## Deployment
+
+This service is deployed on AWS EC2 using nginx as a reverse proxy with HTTPS.
+
+Live endpoint:
+https://embed.danielreagan.dev
+
+API docs:
+https://embed.danielreagan.dev/docs
+
+### Example request (production)
+
+curl -X POST https://embed.danielreagan.dev/embed \
+  -H "Content-Type: application/json" \
+  -d '[{"id":1,"fields":{"desc":"hello world"}}]'
+
+### Infrastructure
+
+- AWS EC2 (Ubuntu)
+- FastAPI + uvicorn
+- nginx reverse proxy
+- systemd service for process management
+- Let's Encrypt (certbot) for HTTPS
 
 ## Notes
 
