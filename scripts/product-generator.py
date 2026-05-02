@@ -184,23 +184,104 @@ price_ranges = {
     "electronics": (30, 1200),
 }
 
+style_adjectives = {
+    "modern": ["sleek", "streamlined", "refined", "polished"],
+    "minimal": ["clean", "simple", "understated"],
+    "industrial": ["raw", "utilitarian", "structured"],
+    "scandinavian": ["light", "functional", "natural"],
+    "mid-century": ["retro", "tapered", "vintage"],
+    "transitional": ["balanced", "versatile"],
+    "rustic": ["warm", "handcrafted", "textured"],
+    "coastal": ["airy", "relaxed", "soft"],
+    "contemporary": ["modern", "refined"],
+}
+
+subcategory_materials = {
+    # furniture
+    "chair": ["wood", "oak", "walnut", "leather", "fabric", "linen", "rattan", "steel"],
+    "table": ["wood", "oak", "walnut", "marble", "concrete", "glass", "steel"],
+    "sofa": ["fabric", "linen", "leather", "velvet", "wool"],
+    "desk": ["wood", "oak", "walnut", "steel", "tempered glass"],
+    "bench": ["wood", "oak", "walnut", "leather", "fabric", "rattan"],
+    "stool": ["wood", "metal", "steel", "leather", "rattan"],
+    "cabinet": ["wood", "oak", "walnut", "steel", "rattan"],
+    "bookshelf": ["wood", "oak", "walnut", "steel", "metal"],
+    "nightstand": ["wood", "oak", "walnut", "metal", "rattan"],
+    "dresser": ["wood", "oak", "walnut"],
+
+    # lighting
+    "lamp": ["metal", "ceramic", "brass", "bronze", "glass"],
+    "ceiling light": ["metal", "glass", "brass", "steel", "acrylic"],
+    "pendant": ["glass", "metal", "brass", "bronze", "ceramic"],
+    "floor lamp": ["metal", "brass", "steel", "bronze"],
+    "wall sconce": ["metal", "brass", "bronze", "glass"],
+    "table lamp": ["ceramic", "glass", "metal", "brass"],
+    "chandelier": ["brass", "bronze", "glass", "metal"],
+    "task light": ["metal", "aluminum", "steel"],
+
+    # decor
+    "clock": ["wood", "metal", "brass", "acrylic", "concrete"],
+    "vase": ["ceramic", "glass", "stone", "marble"],
+    "rug": ["wool", "cotton", "jute"],
+    "throw pillow": ["linen", "cotton", "velvet", "wool"],
+    "planter": ["ceramic", "concrete", "stone", "rattan"],
+    "mirror": ["glass", "metal", "wood", "brass"],
+    "art print": ["paper", "canvas"],
+    "wall art": ["canvas", "wood", "metal", "paper"],
+    "candle holder": ["ceramic", "glass", "brass", "stone"],
+
+    # electronics
+    "speaker": ["aluminum", "plastic", "metal", "fabric mesh"],
+    "headphones": ["plastic", "aluminum", "faux leather", "fabric"],
+    "monitor": ["plastic", "aluminum", "tempered glass"],
+    "keyboard": ["plastic", "aluminum", "metal"],
+    "mouse": ["plastic", "aluminum"],
+    "webcam": ["plastic", "aluminum", "glass"],
+    "soundbar": ["plastic", "aluminum", "fabric mesh"],
+    "microphone": ["aluminum", "metal", "steel", "plastic"],
+}
+
+ACRONYMS = {
+    "usb": "USB",
+    "led": "LED",
+    "tv": "TV",
+    "hd": "HD",
+    "rgb": "RGB",
+}
+
+def title_case(value: str) -> str:
+    words = value.split()
+
+    return " ".join([
+        ACRONYMS.get(word.lower(), word.capitalize())
+        for word in words
+    ])
+
+def normalize_product_text(value: str) -> str:
+    words = value.split()
+
+    return " ".join([
+        ACRONYMS.get(word.lower(), word)
+        for word in words
+    ])
+
 def pick_from_category(category: str, key: str) -> str:
     return random.choice(category_attributes[category][key])
 
 def pick_synonym(item: str) -> str:
     return random.choice([item] + synonyms.get(item, []))
 
-def generate_title(adj: str, material: str, color: str, item: str) -> str:
+def generate_title(style: str, material: str, color: str, item: str) -> str:
     patterns = [
-        f"{adj.capitalize()} {material.capitalize()} {item.capitalize()}",
-        f"{color.capitalize()} {adj.capitalize()} {item.capitalize()}",
-        f"{adj.capitalize()} {color.capitalize()} {material.capitalize()} {item.capitalize()}",
-        f"{material.capitalize()} {item.capitalize()}",
+        f"{color} {style} {material} {item}",
+        f"{style} {material} {item}",
+        f"{color} {material} {item}",
     ]
-    return random.choice(patterns)
+
+    return title_case(random.choice(patterns))
 
 def generate_description(category: str, adj: str, material: str, item: str, color: str, style: str, room: str) -> str:
-    return random.choice(category_description_templates[category]).format(
+    description = random.choice(category_description_templates[category]).format(
         adj=adj,
         material=material,
         item=item,
@@ -208,6 +289,8 @@ def generate_description(category: str, adj: str, material: str, item: str, colo
         style=style,
         room=room,
     )
+
+    return normalize_product_text(description)
 
 def build_tags(category: str, item: str, adj: str, material: str, color: str, style: str) -> list[str]:
     tag_candidates = [category, item, adj, material, color, style]
@@ -221,14 +304,17 @@ for i in range(1, NUM_PRODUCTS + 1):
     base_item = random.choice(categories[category])
     item_variant = pick_synonym(base_item)
 
-    adj = pick_from_category(category, "adjectives")
-    material = pick_from_category(category, "materials")
+    style = pick_from_category(category, "styles")
+    adj = random.choice(style_adjectives.get(style, category_attributes[category]["adjectives"]))
+
+    material_pool = subcategory_materials.get(base_item, category_attributes[category]["materials"])
+    material = random.choice(material_pool)
+
     brand = pick_from_category(category, "brands")
     color = pick_from_category(category, "colors")
-    style = pick_from_category(category, "styles")
     room = random.choice(rooms)
 
-    title = generate_title(adj, material, color, item_variant)
+    title = generate_title(style, material, color, item_variant)
     description = generate_description(category, adj, material, item_variant, color, style, room)
 
     min_price, max_price = price_ranges[category]
@@ -252,7 +338,7 @@ for i in range(1, NUM_PRODUCTS + 1):
         "in_stock": random.choice([True, True, True, False]),
     }
 
-    product["search_text"] = " ".join([
+    product["keyword_text"] = " ".join([
         product["title"],
         product["description"],
         product["category"],
@@ -263,6 +349,12 @@ for i in range(1, NUM_PRODUCTS + 1):
         product["style"],
         " ".join(product["tags"]),
     ])
+
+    product["embedding_text"] = (
+        f"{product['title']}. "
+        f"{product['description']} "
+        f"A {product['style']} {product['subcategory']} in {product['color']} with {product['material']} construction."
+    )
 
     products.append(product)
 
